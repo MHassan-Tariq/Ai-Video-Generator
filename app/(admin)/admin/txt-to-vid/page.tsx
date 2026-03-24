@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { StatusBadge } from "@/components/StatusBadge"
 import { UploadField } from "@/components/UploadField"
+import { Select } from "@/components/ui/select"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ColumnDef } from "@tanstack/react-table"
 import { Plus, Edit, Trash2, ArrowUpCircle } from "lucide-react"
@@ -30,6 +31,15 @@ interface TextToVideo {
   order: number
   is_active: boolean
 }
+
+const ART_STYLES = {
+  'Cinematic': '🎬',
+  'Anime': '🎨',
+  'Realistic': '📸',
+  'Fantasy': '🌌'
+};
+
+const CAMERA_MOTIONS = ['Static', 'Slow Zoom', 'Orbit', 'Tracking Shot'];
 
 export default function TextToVideoPage() {
   const [data, setData] = useState<TextToVideo[]>([])
@@ -84,8 +94,13 @@ export default function TextToVideoPage() {
       // Auto-increment order for new items
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => d.order || 0)) + 1 : 1
       setFormData({ 
-        title: "", prompt: "", style: "", camera_motion: "", template: "", 
-        order: nextOrder, is_active: true 
+        title: "", 
+        prompt: "", 
+        style: Object.keys(ART_STYLES)[0], 
+        camera_motion: CAMERA_MOTIONS[0], 
+        template: "", 
+        order: nextOrder, 
+        is_active: true 
       })
     }
     setIsDialogOpen(true)
@@ -243,24 +258,34 @@ export default function TextToVideoPage() {
 
             <div className="space-y-2">
               <Label htmlFor="style">Art Style</Label>
-              <Input 
+              <Select 
                 id="style" 
                 value={formData.style} 
                 onChange={e => setFormData({...formData, style: e.target.value})} 
-                required 
-                placeholder="e.g. 3D Render"
-              />
+                required
+              >
+                {Object.entries(ART_STYLES).map(([name, emoji]) => (
+                  <option key={name} value={name}>
+                    {emoji} {name}
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="camera_motion">Camera Motion</Label>
-              <Input 
+              <Select 
                 id="camera_motion" 
                 value={formData.camera_motion} 
                 onChange={e => setFormData({...formData, camera_motion: e.target.value})} 
-                required 
-                placeholder="e.g. Pan Up, Zoom Out"
-              />
+                required
+              >
+                {CAMERA_MOTIONS.map(motion => (
+                  <option key={motion} value={motion}>
+                    {motion}
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="space-y-2">
