@@ -4,44 +4,62 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { getCollection } from "@/lib/firestore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Palette, Video, ImageIcon, Type, Activity } from "lucide-react"
+import { Palette, Video, ImageIcon, Type, Activity, MessageSquare, Compass, House } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
-    artStyles: { total: 0, active: 0 },
-    imageToVideo: { total: 0, active: 0 },
-    textToImage: { total: 0, active: 0 },
-    textToVideo: { total: 0, active: 0 },
+    homeDecoration: { total: 0, active: 0 },
+    examplePhotos: { total: 0, active: 0 },
+    colorPalettes: { total: 0, active: 0 },
+    selectStyle: { total: 0, active: 0 },
+    customPrompts: { total: 0, active: 0 },
+    explore: { total: 0, active: 0 },
+    roomTypes: { total: 0, active: 0 },
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [artStyles, imgToVid, txtToImg, txtToVid] = await Promise.all([
-          getCollection("art_styles"),
-          getCollection("image_to_video"),
-          getCollection("text_to_image"),
-          getCollection("text_to_video", "order")
+        const [homeDecoration, examplePhotos, colorPalettes, selectStyle, customPrompts, explore, roomTypes] = await Promise.all([
+          getCollection("home_decoration"),
+          getCollection("example_photos"),
+          getCollection("color_palettes"),
+          getCollection("select_style"),
+          getCollection("custom_prompts"),
+          getCollection("explore"),
+          getCollection("room_types")
         ])
 
         setStats({
-          artStyles: {
-            total: artStyles.length,
-            active: (artStyles as any[]).filter(i => i.is_active).length
+          homeDecoration: {
+            total: homeDecoration.length,
+            active: (homeDecoration as any[]).filter(i => i.is_active).length
           },
-          imageToVideo: {
-            total: imgToVid.length,
-            active: (imgToVid as any[]).filter(i => i.is_active).length
+          examplePhotos: {
+            total: examplePhotos.length,
+            active: (examplePhotos as any[]).filter(i => i.is_active).length
           },
-          textToImage: {
-            total: txtToImg.length,
-            active: (txtToImg as any[]).filter(i => i.is_active).length
+          colorPalettes: {
+            total: colorPalettes.length,
+            active: (colorPalettes as any[]).filter(i => i.is_active).length
           },
-          textToVideo: {
-            total: txtToVid.length,
-            active: (txtToVid as any[]).filter(i => i.is_active).length
+          selectStyle: {
+            total: selectStyle.length,
+            active: (selectStyle as any[]).filter(i => i.is_active).length
+          },
+          customPrompts: {
+            total: customPrompts.length,
+            active: (customPrompts as any[]).filter(i => i.is_active).length
+          },
+          explore: {
+            total: explore.length,
+            active: (explore as any[]).filter(i => i.is_active).length
+          },
+          roomTypes: {
+            total: roomTypes.length,
+            active: (roomTypes as any[]).filter(i => i.is_active).length
           }
         })
       } catch (error) {
@@ -83,45 +101,71 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Overview of your AI generative resources.</p>
+        <p className="text-muted-foreground">Overview of your Home Decoration resources.</p>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Art Styles" data={stats.artStyles} icon={Palette} />
-        <StatCard title="Image to Video" data={stats.imageToVideo} icon={Video} />
-        <StatCard title="Text to Image" data={stats.textToImage} icon={ImageIcon} />
-        <StatCard title="Text to Video" data={stats.textToVideo} icon={Type} />
+        <StatCard title="Home Decoration" data={stats.homeDecoration} icon={Palette} />
+        <StatCard title="Example Photos" data={stats.examplePhotos} icon={ImageIcon} />
+        <StatCard title="Color Palettes" data={stats.colorPalettes} icon={Palette} />
+        <StatCard title="Select Style" data={stats.selectStyle} icon={Palette} />
+        <StatCard title="Custom Prompts" data={stats.customPrompts} icon={MessageSquare} />
+        <StatCard title="Explore" data={stats.explore} icon={Compass} />
+             <Link href="/admin/room-types">
+               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
+                 <House className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Room Types</h3>
+               </div>
+             </Link>
       </div>
 
       <div className="grid gap-4 w-full">
         <Card className="border-border">
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle className="text-xl font-bold tracking-tight">Quick Links</CardTitle>
-            <CardDescription className="text-[15px]">Manage your generative content pipelines.</CardDescription>
+            <CardDescription className="text-[15px]">Manage your transformation content.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6 pb-6 w-full">
-             <Link href="/admin/art-style">
+             <Link href="/admin/home-decoration">
                <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
                  <Palette className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
-                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Add Art Style</h3>
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Home Decoration</h3>
                </div>
              </Link>
-             <Link href="/admin/img-to-vid">
-               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
-                 <Video className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
-                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Add Image2Video</h3>
-               </div>
-             </Link>
-             <Link href="/admin/txt-to-img">
+             <Link href="/admin/example-photos">
                <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
                  <ImageIcon className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
-                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Add Text2Image</h3>
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Example Photos</h3>
                </div>
              </Link>
-             <Link href="/admin/txt-to-vid">
+             <Link href="/admin/color-palettes">
                <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
-                 <Type className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
-                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Add Text2Video</h3>
+                 <Palette className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Color Palettes</h3>
+               </div>
+             </Link>
+             <Link href="/admin/select-style">
+               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
+                 <Palette className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Select Style</h3>
+               </div>
+             </Link>
+             <Link href="/admin/custom-prompts">
+               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
+                 <MessageSquare className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Custom Prompts</h3>
+               </div>
+             </Link>
+             <Link href="/admin/explore">
+               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
+                 <Compass className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Explore</h3>
+               </div>
+             </Link>
+             <Link href="/admin/room-types">
+               <div className="py-10 px-6 rounded-xl border border-border/60 bg-secondary/10 hover:bg-secondary/30 transition-all cursor-pointer flex flex-col items-center justify-center space-y-4 group">
+                 <House className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                 <h3 className="font-semibold text-[15px] tracking-wide text-foreground">Room Types</h3>
                </div>
              </Link>
           </CardContent>

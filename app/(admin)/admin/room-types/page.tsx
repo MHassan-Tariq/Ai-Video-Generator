@@ -1,18 +1,17 @@
 "use client"
 
+import * as React from "react"
 import { useState, useEffect } from "react"
 import { getCollection, addDocument, updateDocument, deleteDocument } from "@/lib/firestore"
-import { deleteFile } from "@/lib/storage"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { StatusBadge } from "@/components/StatusBadge"
-import { UploadField } from "@/components/UploadField"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ColumnDef } from "@tanstack/react-table"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus, Edit, Trash2, House, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -20,40 +19,39 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-interface ArtStyle {
+interface RoomType {
   id: string
   name: string
-  prompt: string
-  image: string
+  icon_name: string
   order: number
   is_active: boolean
 }
 
-export default function ArtStylesPage() {
-  const [data, setData] = useState<ArtStyle[]>([])
+export default function RoomTypesPage() {
+  const [data, setData] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<ArtStyle | null>(null)
+  const [editingItem, setEditingItem] = useState<RoomType | null>(null)
   
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [deletingItem, setDeletingItem] = useState<ArtStyle | null>(null)
+  const [deletingItem, setDeletingItem] = useState<RoomType | null>(null)
 
   const [formData, setFormData] = useState({
     name: "",
-    prompt: "",
-    image: "",
+    icon_name: "",
     order: 1,
     is_active: true
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadData = async () => {
     setLoading(true)
     try {
-      const items = await getCollection("art_styles") as ArtStyle[]
-      setData(items)
+      const items = await getCollection("room_types")
+      setData(items as RoomType[])
     } catch (error) {
-      console.error("Failed to load art styles", error)
+      console.error("Failed to load records", error)
     } finally {
       setLoading(false)
     }
@@ -63,20 +61,24 @@ export default function ArtStylesPage() {
     loadData()
   }, [])
 
-  const handleOpenDialog = (item?: ArtStyle) => {
+  const handleOpenDialog = (item?: RoomType) => {
     if (item) {
       setEditingItem(item)
       setFormData({
         name: item.name || "",
-        prompt: item.prompt || "",
-        image: item.image || "",
+        icon_name: item.icon_name || "",
         order: item.order || 1,
         is_active: item.is_active ?? true
       })
     } else {
       setEditingItem(null)
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => Number(d.order) || 0)) + 1 : 1
-      setFormData({ name: "", prompt: "", image: "", order: nextOrder, is_active: true })
+      setFormData({ 
+        name: "", 
+        icon_name: "", 
+        order: nextOrder, 
+        is_active: true 
+      })
     }
     setIsDialogOpen(true)
   }
@@ -87,20 +89,20 @@ export default function ArtStylesPage() {
     
     try {
       if (editingItem) {
-        await updateDocument("art_styles", editingItem.id, formData)
+        await updateDocument("room_types", editingItem.id, formData)
       } else {
-        await addDocument("art_styles", formData)
+        await addDocument("room_types", formData)
       }
       await loadData()
       setIsDialogOpen(false)
     } catch (error) {
-         console.error("Error saving style:", error)
+      console.error("Error saving record:", error)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleDeleteClick = (item: ArtStyle) => {
+  const handleDeleteClick = (item: RoomType) => {
     setDeletingItem(item)
     setIsConfirmOpen(true)
   }
@@ -109,42 +111,38 @@ export default function ArtStylesPage() {
     if (!deletingItem) return
     
     try {
-      await deleteDocument("art_styles", deletingItem.id)
-      if (deletingItem.image) {
-        await deleteFile(deletingItem.image)
-      }
+      setIsDeleting(true)
+      await deleteDocument("room_types", deletingItem.id)
       await loadData()
+      setIsConfirmOpen(false)
     } catch (error) {
-      console.error("Error deleting style:", error)
+      console.error("Error deleting record:", error)
     } finally {
+      setIsDeleting(false)
       setDeletingItem(null)
     }
   }
 
-  const columns: ColumnDef<ArtStyle>[] = [
+  const columns: ColumnDef<RoomType>[] = [
     {
-       accessorKey: "image",
-       header: "Image",
-       cell: ({ row }) => (
-         <div className="w-16 h-16 rounded overflow-hidden bg-secondary">
-           {row.original.image && (
-             <img src={row.original.image} alt={row.original.name} className="w-full h-full object-cover" />
-           )}
-         </div>
-       )
+      accessorKey: "icon_name",
+      header: "Icon Name",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+           <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center">
+             <House className="w-4 h-4 text-muted-foreground" />
+           </div>
+           <span className="text-sm font-mono text-muted-foreground">{row.original.icon_name}</span>
+        </div>
+      )
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Room Name",
     },
     {
       accessorKey: "order",
       header: "Order",
-    },
-    {
-      accessorKey: "prompt",
-      header: "Prompt",
-      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.original.prompt}</div>
     },
     {
       accessorKey: "is_active",
@@ -170,65 +168,62 @@ export default function ArtStylesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-card p-6 rounded-xl border border-border shadow-sm">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Art Styles</h2>
-          <p className="text-muted-foreground">Manage generative art styles (e.g., Anime, 3D, Ghibli).</p>
+          <h2 className="text-3xl font-bold tracking-tight">Room Types</h2>
+          <p className="text-muted-foreground">Manage categories of rooms (e.g. Living Room, Bedroom).</p>
         </div>
         <Button onClick={() => handleOpenDialog()} className="font-semibold shadow-md">
-          <Plus className="w-4 h-4 mr-2" /> Add Style
+          <Plus className="w-4 h-4 mr-2" /> Add Room Type
         </Button>
       </div>
 
       <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
          {loading ? (
-             <div className="text-center p-8 text-muted-foreground">Loading styles...</div>
+             <div className="text-center p-8 text-muted-foreground">Loading room types...</div>
          ) : (
              <DataTable columns={columns} data={data} searchKey="name" />
          )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "Edit Art Style" : "Add Art Style"}</DialogTitle>
+            <DialogTitle>{editingItem ? "Edit Room Type" : "Add Room Type"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Room Name</Label>
               <Input 
                 id="name" 
                 value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, name: e.target.value})} 
                 required 
-                placeholder="e.g. Studio Ghibli"
+                placeholder="e.g. Master Bedroom"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt Prefix / Suffix</Label>
+              <Label htmlFor="icon_name">Icon Name</Label>
               <Input 
-                id="prompt" 
-                value={formData.prompt} 
-                onChange={e => setFormData({...formData, prompt: e.target.value})} 
+                id="icon_name" 
+                value={formData.icon_name} 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, icon_name: e.target.value})} 
                 required 
-                placeholder="e.g. in the style of studio ghibli anime, masterpiece"
+                placeholder="e.g. bed, sofa, home"
               />
+              <p className="text-xs text-muted-foreground">Enter the name of the icon from the library.</p>
             </div>
-            <div className="space-y-2">
-              <Label>Reference Image</Label>
-              <UploadField 
-                storagePath="art_styles" 
-                value={formData.image} 
-                onChange={(url) => setFormData({...formData, image: url})} 
-              />
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="order">Sort Order</Label>
               <Input 
                 id="order" 
                 type="number"
                 value={formData.order} 
-                disabled
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, order: parseInt(e.target.value) || 1})}
+                required
               />
             </div>
+
             <div className="flex items-center space-x-2 py-2">
               <Switch 
                 id="active" 
@@ -237,12 +232,14 @@ export default function ArtStylesPage() {
               />
               <Label htmlFor="active">Active</Label>
             </div>
+
             <div className="flex justify-end gap-2 pt-4 border-t border-border mt-4">
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving || !formData.image}>
-                {isSaving ? "Saving..." : "Save Style"}
+              <Button type="submit" disabled={isSaving || !formData.name || !formData.icon_name}>
+                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSaving ? "Saving..." : "Save Room Type"}
               </Button>
             </div>
           </form>
@@ -251,10 +248,11 @@ export default function ArtStylesPage() {
 
       <ConfirmDialog 
         open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        title="Delete Art Style"
-        description="Are you sure you want to delete this art style? This action cannot be undone and will delete the associated image from storage."
+        onOpenChange={(open) => !isDeleting && setIsConfirmOpen(open)}
+        title="Delete Room Type"
+        description="Are you sure you want to delete this room type? This action cannot be undone."
         onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
       />
     </div>
   )

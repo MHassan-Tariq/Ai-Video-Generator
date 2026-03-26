@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
 
 interface ConfirmDialogProps {
   open: boolean
@@ -19,6 +20,7 @@ interface ConfirmDialogProps {
   confirmText?: string
   cancelText?: string
   destructive?: boolean
+  isLoading?: boolean
 }
 
 export function ConfirmDialog({
@@ -29,7 +31,8 @@ export function ConfirmDialog({
   onConfirm,
   confirmText = "Confirm",
   cancelText = "Cancel",
-  destructive = true
+  destructive = true,
+  isLoading = false
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -47,10 +50,12 @@ export function ConfirmDialog({
             onConfirm();
             onOpenChange(false);
           }}>
-             <Button 
+              <Button 
                 type="submit" 
                 variant={destructive ? "destructive" : "default"}
+                disabled={isLoading}
              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {confirmText}
              </Button>
           </form>

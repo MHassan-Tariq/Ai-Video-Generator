@@ -12,7 +12,7 @@ interface UploadFieldProps {
   disabled?: boolean
 }
 
-export function UploadField({ storagePath, accept = "image/*,audio/*", value, onChange, disabled }: UploadFieldProps) {
+export function UploadField({ storagePath, accept = "image/jpeg,image/png", value, onChange, disabled }: UploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
 

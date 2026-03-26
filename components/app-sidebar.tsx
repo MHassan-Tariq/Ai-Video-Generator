@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, Palette, ImageIcon, Type, Video, LogOut } from "lucide-react"
+import { LayoutDashboard, Palette, ImageIcon, Type, Video, LogOut, MessageSquare, Compass, House } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
@@ -16,10 +16,13 @@ import {
 
 const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Art Style", url: "/admin/art-style", icon: Palette },
-  { title: "Image to Video", url: "/admin/img-to-vid", icon: Video },
-  { title: "Text to Image", url: "/admin/txt-to-img", icon: ImageIcon },
-  { title: "Text to Video", url: "/admin/txt-to-vid", icon: Type },
+  { title: "Home Decoration", url: "/admin/home-decoration", icon: Palette },
+  { title: "Example Photos", url: "/admin/example-photos", icon: ImageIcon },
+  { title: "Color Palettes", url: "/admin/color-palettes", icon: Palette },
+  { title: "Select Style", url: "/admin/select-style", icon: Palette },
+  { title: "Custom Prompts", url: "/admin/custom-prompts", icon: MessageSquare },
+  { title: "Explore", url: "/admin/explore", icon: Compass },
+  { title: "Room Types", url: "/admin/room-types", icon: House },
 ]
 
 export function AppSidebar() {
