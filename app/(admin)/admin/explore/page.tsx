@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { StatusBadge } from "@/components/StatusBadge"
 import { UploadField } from "@/components/UploadField"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
+import { Select } from "@/components/ui/select"
 import { ColumnDef } from "@tanstack/react-table"
 import { Plus, Edit, Trash2, Compass, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -33,6 +34,12 @@ interface ExploreItem {
   is_active: boolean
 }
 
+interface RoomType {
+  id: string
+  name: string
+  is_active: boolean
+}
+
 export default function ExplorePage() {
   const [data, setData] = useState<ExploreItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,6 +48,7 @@ export default function ExplorePage() {
   
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [deletingItem, setDeletingItem] = useState<ExploreItem | null>(null)
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
 
   const [formData, setFormData] = useState({
     title: "",
@@ -56,8 +64,12 @@ export default function ExplorePage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const items = await getCollection("explore")
+      const [items, rooms] = await Promise.all([
+        getCollection("explore"),
+        getCollection("room_types")
+      ])
       setData(items as ExploreItem[])
+      setRoomTypes((rooms as RoomType[]).filter(r => r.is_active))
     } catch (error) {
       console.error("Failed to load records", error)
     } finally {
@@ -227,13 +239,19 @@ export default function ExplorePage() {
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input 
+              <Select 
                 id="category" 
                 value={formData.category} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, category: e.target.value})} 
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})} 
                 required
-                placeholder="e.g. Living Room, Bedroom"
-              />
+              >
+                <option value="" disabled>Select a room type</option>
+                {roomTypes.map((type) => (
+                  <option key={type.id} value={type.name}>
+                    {type.name}
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="space-y-2">

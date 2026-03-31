@@ -11,7 +11,9 @@ import { Switch } from "@/components/ui/switch"
 import { StatusBadge } from "@/components/StatusBadge"
 import { ConfirmDialog } from "@/components/ConfirmDialog"
 import { ColumnDef } from "@tanstack/react-table"
-import { Plus, Edit, Trash2, House, Loader2 } from "lucide-react"
+import { Plus, Edit, Trash2, Loader2, Image as ImageIcon } from "lucide-react"
+import { deleteFile } from "@/lib/storage"
+import { UploadField } from "@/components/UploadField"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +24,7 @@ import {
 interface RoomType {
   id: string
   name: string
-  icon_name: string
+  image: string
   order: number
   is_active: boolean
 }
@@ -38,7 +40,7 @@ export default function RoomTypesPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    icon_name: "",
+    image: "",
     order: 1,
     is_active: true
   })
@@ -66,7 +68,7 @@ export default function RoomTypesPage() {
       setEditingItem(item)
       setFormData({
         name: item.name || "",
-        icon_name: item.icon_name || "",
+        image: item.image || "",
         order: item.order || 1,
         is_active: item.is_active ?? true
       })
@@ -75,7 +77,7 @@ export default function RoomTypesPage() {
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => Number(d.order) || 0)) + 1 : 1
       setFormData({ 
         name: "", 
-        icon_name: "", 
+        image: "",
         order: nextOrder, 
         is_active: true 
       })
@@ -113,6 +115,7 @@ export default function RoomTypesPage() {
     try {
       setIsDeleting(true)
       await deleteDocument("room_types", deletingItem.id)
+      if (deletingItem.image) await deleteFile(deletingItem.image)
       await loadData()
       setIsConfirmOpen(false)
     } catch (error) {
@@ -125,14 +128,15 @@ export default function RoomTypesPage() {
 
   const columns: ColumnDef<RoomType>[] = [
     {
-      accessorKey: "icon_name",
-      header: "Icon Name",
+      accessorKey: "image",
+      header: "Image",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-           <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center">
-             <House className="w-4 h-4 text-muted-foreground" />
-           </div>
-           <span className="text-sm font-mono text-muted-foreground">{row.original.icon_name}</span>
+        <div className="w-12 h-12 rounded overflow-hidden bg-secondary flex items-center justify-center border border-border">
+          {row.original.image ? (
+            <img src={row.original.image} alt={row.original.name} className="w-full h-full object-cover" />
+          ) : (
+            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+          )}
         </div>
       )
     },
@@ -202,15 +206,12 @@ export default function RoomTypesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="icon_name">Icon Name</Label>
-              <Input 
-                id="icon_name" 
-                value={formData.icon_name} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, icon_name: e.target.value})} 
-                required 
-                placeholder="e.g. bed, sofa, home"
+              <Label>Room Image</Label>
+              <UploadField 
+                storagePath="room_types" 
+                value={formData.image} 
+                onChange={(url) => setFormData({...formData, image: url})} 
               />
-              <p className="text-xs text-muted-foreground">Enter the name of the icon from the library.</p>
             </div>
 
             <div className="space-y-2">
@@ -237,7 +238,7 @@ export default function RoomTypesPage() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving || !formData.name || !formData.icon_name}>
+              <Button type="submit" disabled={isSaving || !formData.name || !formData.image}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isSaving ? "Saving..." : "Save Room Type"}
               </Button>

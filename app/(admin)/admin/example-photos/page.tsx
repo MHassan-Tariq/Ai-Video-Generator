@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Select } from "@/components/ui/select"
 
 interface ExamplePhoto {
   id: string
@@ -31,6 +32,7 @@ interface ExamplePhoto {
 
 export default function ExamplePhotosPage() {
   const [data, setData] = useState<ExamplePhoto[]>([])
+  const [roomTypes, setRoomTypes] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ExamplePhoto | null>(null)
@@ -53,6 +55,9 @@ export default function ExamplePhotosPage() {
     try {
       const items = await getCollection("example_photos") as ExamplePhoto[]
       setData(items)
+      
+      const rooms = await getCollection("room_types")
+      setRoomTypes(rooms.map((r: any) => ({ id: r.id, name: r.name })))
     } catch (error) {
       console.error("Failed to load records", error)
     } finally {
@@ -215,12 +220,18 @@ export default function ExamplePhotosPage() {
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input 
-                id="category" 
+              <Select 
+                id="category"
                 value={formData.category} 
-                onChange={e => setFormData({...formData, category: e.target.value})} 
-                placeholder="e.g. Kitchen, Living Room"
-              />
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({...formData, category: e.target.value})}
+              >
+                <option value="">Select a room type</option>
+                {roomTypes.map((room) => (
+                  <option key={room.id} value={room.name}>
+                    {room.name}
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="space-y-2">

@@ -23,6 +23,7 @@ import {
 interface HomeDecoration {
   id: string
   title: string
+  category: string
   description: string
   before_image: string
   after_image: string
@@ -41,6 +42,7 @@ export default function HomeDecorationPage() {
 
   const [formData, setFormData] = useState({
     title: "",
+    category: "",
     description: "",
     before_image: "",
     after_image: "",
@@ -71,6 +73,7 @@ export default function HomeDecorationPage() {
       setEditingItem(item)
       setFormData({
         title: item.title || "",
+        category: item.category || "",
         description: item.description || "",
         before_image: item.before_image || "",
         after_image: item.after_image || "",
@@ -82,6 +85,7 @@ export default function HomeDecorationPage() {
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => Number(d.order) || 0)) + 1 : 1
       setFormData({ 
         title: "", 
+        category: "",
         description: "",
         before_image: "", 
         after_image: "", 
@@ -172,6 +176,11 @@ export default function HomeDecorationPage() {
       header: "Title",
     },
     {
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }) => <span className="px-2 py-1 rounded bg-secondary/50 text-xs font-medium">{row.original.category || "General"}</span>
+    },
+    {
       accessorKey: "order",
       header: "Order",
     },
@@ -229,6 +238,16 @@ export default function HomeDecorationPage() {
                 onChange={e => setFormData({...formData, title: e.target.value})} 
                 required 
                 placeholder="e.g. Modern Living Room"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input 
+                id="category" 
+                value={formData.category} 
+                onChange={e => setFormData({...formData, category: e.target.value})} 
+                placeholder="e.g. Living Room, Bedroom"
               />
             </div>
 
