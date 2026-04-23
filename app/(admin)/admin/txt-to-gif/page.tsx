@@ -20,30 +20,28 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-interface ImageToVideo {
+interface TextToGif {
   id: string
   title: string
   prompt: string
-  motion_style: string
   template: string
   order: number
   is_premium: boolean
   is_active: boolean
 }
 
-export default function ImageToVideoPage() {
-  const [data, setData] = useState<ImageToVideo[]>([])
+export default function TextToGifPage() {
+  const [data, setData] = useState<TextToGif[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingItem, setEditingItem] = useState<ImageToVideo | null>(null)
+  const [editingItem, setEditingItem] = useState<TextToGif | null>(null)
   
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [deletingItem, setDeletingItem] = useState<ImageToVideo | null>(null)
+  const [deletingItem, setDeletingItem] = useState<TextToGif | null>(null)
 
   const [formData, setFormData] = useState({
     title: "",
     prompt: "",
-    motion_style: "",
     template: "",
     order: 1,
     is_premium: false,
@@ -54,7 +52,7 @@ export default function ImageToVideoPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const items = await getCollection("image_to_video") as ImageToVideo[]
+      const items = await getCollection("text_to_gif") as TextToGif[]
       setData(items)
     } catch (error) {
       console.error("Failed to load records", error)
@@ -67,13 +65,12 @@ export default function ImageToVideoPage() {
     loadData()
   }, [])
 
-  const handleOpenDialog = (item?: ImageToVideo) => {
+  const handleOpenDialog = (item?: TextToGif) => {
     if (item) {
       setEditingItem(item)
       setFormData({
         title: item.title || "",
         prompt: item.prompt || "",
-        motion_style: item.motion_style || "",
         template: item.template || "",
         order: item.order || 1,
         is_premium: item.is_premium ?? false,
@@ -82,7 +79,7 @@ export default function ImageToVideoPage() {
     } else {
       setEditingItem(null)
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => Number(d.order) || 0)) + 1 : 1
-      setFormData({ title: "", prompt: "", motion_style: "", template: "", order: nextOrder, is_premium: false, is_active: true })
+      setFormData({ title: "", prompt: "", template: "", order: nextOrder, is_premium: false, is_active: true })
     }
     setIsDialogOpen(true)
   }
@@ -93,9 +90,9 @@ export default function ImageToVideoPage() {
     
     try {
       if (editingItem) {
-        await updateDocument("image_to_video", editingItem.id, formData)
+        await updateDocument("text_to_gif", editingItem.id, formData)
       } else {
-        await addDocument("image_to_video", formData)
+        await addDocument("text_to_gif", formData)
       }
       await loadData()
       setIsDialogOpen(false)
@@ -106,7 +103,7 @@ export default function ImageToVideoPage() {
     }
   }
 
-  const handleDeleteClick = (item: ImageToVideo) => {
+  const handleDeleteClick = (item: TextToGif) => {
     setDeletingItem(item)
     setIsConfirmOpen(true)
   }
@@ -115,7 +112,7 @@ export default function ImageToVideoPage() {
     if (!deletingItem) return
     
     try {
-      await deleteDocument("image_to_video", deletingItem.id)
+      await deleteDocument("text_to_gif", deletingItem.id)
       if (deletingItem.template) {
         await deleteFile(deletingItem.template)
       }
@@ -127,14 +124,14 @@ export default function ImageToVideoPage() {
     }
   }
 
-  const columns: ColumnDef<ImageToVideo>[] = [
+  const columns: ColumnDef<TextToGif>[] = [
     {
        accessorKey: "template",
-       header: "Template",
+       header: "Template GIF",
        cell: ({ row }) => (
          <div className="w-16 h-16 rounded overflow-hidden bg-secondary flex items-center justify-center">
            {row.original.template ? (
-             <img src={row.original.template} alt={row.original.title} className="w-full h-full object-cover" />
+             <img src={row.original.template} alt="Template" className="w-full h-full object-cover" />
            ) : (
              <span className="text-xs text-muted-foreground">None</span>
            )}
@@ -144,20 +141,16 @@ export default function ImageToVideoPage() {
     {
       accessorKey: "title",
       header: "Title",
+      cell: ({ row }) => <span className="font-medium">{row.original.title}</span>
     },
     {
       accessorKey: "order",
       header: "Order",
     },
     {
-      accessorKey: "motion_style",
-      header: "Motion Style",
-      cell: ({ row }) => <span className="font-medium text-primary">{row.original.motion_style}</span>
-    },
-    {
       accessorKey: "prompt",
-      header: "Prompt",
-      cell: ({ row }) => <div className="max-w-[250px] truncate">{row.original.prompt}</div>
+      header: "System Prompt",
+      cell: ({ row }) => <div className="max-w-[350px] truncate" title={row.original.prompt}>{row.original.prompt}</div>
     },
     {
       accessorKey: "is_premium",
@@ -188,17 +181,17 @@ export default function ImageToVideoPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-card p-6 rounded-xl border border-border shadow-sm">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Image to Video</h2>
-          <p className="text-muted-foreground">Manage motion styles (e.g., Slow Zoom, Pan Right).</p>
+          <h2 className="text-3xl font-bold tracking-tight">Text to GIF</h2>
+          <p className="text-muted-foreground">Manage text generation prompts and GIF styles.</p>
         </div>
         <Button onClick={() => handleOpenDialog()} className="font-semibold shadow-md">
-          <Plus className="w-4 h-4 mr-2" /> Add Template
+          <Plus className="w-4 h-4 mr-2" /> Add Prompt Style
         </Button>
       </div>
 
       <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
          {loading ? (
-             <div className="text-center p-8 text-muted-foreground">Loading templates...</div>
+             <div className="text-center p-8 text-muted-foreground">Loading...</div>
          ) : (
              <DataTable columns={columns} data={data} searchKey="title" />
          )}
@@ -207,7 +200,7 @@ export default function ImageToVideoPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "Edit Template" : "Add Template"}</DialogTitle>
+            <DialogTitle>{editingItem ? "Edit Text to GIF" : "Add Text to GIF"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
@@ -217,33 +210,26 @@ export default function ImageToVideoPage() {
                 value={formData.title} 
                 onChange={e => setFormData({...formData, title: e.target.value})} 
                 required 
-                placeholder="e.g. Cinematic Zoom"
+                placeholder="e.g. Cartoon GIF"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="motion_style">Motion Style</Label>
-              <Input 
-                id="motion_style" 
-                value={formData.motion_style} 
-                onChange={e => setFormData({...formData, motion_style: e.target.value})} 
-                required 
-                placeholder="e.g. Slow Zoom In"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt Prefix / Suffix</Label>
-              <Input 
+              <Label htmlFor="prompt">Template Prompt</Label>
+              <textarea 
                 id="prompt" 
                 value={formData.prompt} 
                 onChange={e => setFormData({...formData, prompt: e.target.value})} 
                 required 
-                placeholder="e.g. high quality, 4k, cinematic movement"
+                rows={4}
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="e.g. A funny animation of [SUBJECT] dancing..."
               />
             </div>
             <div className="space-y-2">
-              <Label>Reference Template</Label>
+              <Label>Template Example GIF (Optional)</Label>
               <UploadField 
-                storagePath="image_to_video" 
+                storagePath="text_to_gif" 
+                accept="image/gif"
                 value={formData.template} 
                 onChange={(url) => setFormData({...formData, template: url})} 
               />
@@ -277,7 +263,7 @@ export default function ImageToVideoPage() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving || !formData.template}>
+              <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save Template"}
               </Button>
             </div>
@@ -288,8 +274,8 @@ export default function ImageToVideoPage() {
       <ConfirmDialog 
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
-        title="Delete Template"
-        description="Are you sure you want to delete this template? This action cannot be undone and will delete the associated file from storage."
+        title="Delete Item"
+        description="Are you sure you want to delete this prompt style? This action cannot be undone."
         onConfirm={handleConfirmDelete}
       />
     </div>

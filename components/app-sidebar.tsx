@@ -16,10 +16,8 @@ import {
 
 const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Art Style", url: "/admin/art-style", icon: Palette },
-  { title: "Image to Video", url: "/admin/img-to-vid", icon: Video },
-  { title: "Text to Image", url: "/admin/txt-to-img", icon: ImageIcon },
-  { title: "Text to Video", url: "/admin/txt-to-vid", icon: Type },
+  { title: "Sample Images", url: "/admin/txt-to-img", icon: ImageIcon },
+  { title: "Text to GIF", url: "/admin/txt-to-gif", icon: Video },
 ]
 
 export function AppSidebar() {

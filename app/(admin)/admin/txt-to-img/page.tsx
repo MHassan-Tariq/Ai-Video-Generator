@@ -182,7 +182,7 @@ export default function TextToImagePage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-card p-6 rounded-xl border border-border shadow-sm">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Text to Image</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Sample Images</h2>
           <p className="text-muted-foreground">Manage text generation prompts and visual styles.</p>
         </div>
         <Button onClick={() => handleOpenDialog()} className="font-semibold shadow-md">
@@ -201,7 +201,7 @@ export default function TextToImagePage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "Edit Text to Image" : "Add Text to Image"}</DialogTitle>
+            <DialogTitle>{editingItem ? "Edit Sample Images" : "Add Sample Images"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="space-y-2">
