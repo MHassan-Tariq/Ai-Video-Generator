@@ -23,6 +23,7 @@ import {
 interface TextToGif {
   id: string
   title: string
+  person: string
   prompt: string
   template: string
   order: number
@@ -41,6 +42,7 @@ export default function TextToGifPage() {
 
   const [formData, setFormData] = useState({
     title: "",
+    person: "",
     prompt: "",
     template: "",
     order: 1,
@@ -70,6 +72,7 @@ export default function TextToGifPage() {
       setEditingItem(item)
       setFormData({
         title: item.title || "",
+        person: item.person || "",
         prompt: item.prompt || "",
         template: item.template || "",
         order: item.order || 1,
@@ -79,7 +82,7 @@ export default function TextToGifPage() {
     } else {
       setEditingItem(null)
       const nextOrder = data.length > 0 ? Math.max(...data.map(d => Number(d.order) || 0)) + 1 : 1
-      setFormData({ title: "", prompt: "", template: "", order: nextOrder, is_premium: false, is_active: true })
+      setFormData({ title: "", person: "", prompt: "", template: "", order: nextOrder, is_premium: false, is_active: true })
     }
     setIsDialogOpen(true)
   }
@@ -142,6 +145,11 @@ export default function TextToGifPage() {
       accessorKey: "title",
       header: "Title",
       cell: ({ row }) => <span className="font-medium">{row.original.title}</span>
+    },
+    {
+      accessorKey: "person",
+      header: "Person",
+      cell: ({ row }) => <span>{row.original.person || "-"}</span>
     },
     {
       accessorKey: "order",
@@ -211,6 +219,15 @@ export default function TextToGifPage() {
                 onChange={e => setFormData({...formData, title: e.target.value})} 
                 required 
                 placeholder="e.g. Cartoon GIF"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="person">Person</Label>
+              <Input 
+                id="person" 
+                value={formData.person} 
+                onChange={e => setFormData({...formData, person: e.target.value})} 
+                placeholder="e.g. John Doe"
               />
             </div>
             <div className="space-y-2">
